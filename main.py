@@ -32,7 +32,7 @@ def main():
     plt.plot(result)
 
   plt.legend(['eps 0.1', 'eps 0.01', 'greedy'])
-  plt.savefig('plot.png', dpi=800)
+  plt.savefig('plot.png', dpi=400)
 
 
 if __name__ == '__main__':
