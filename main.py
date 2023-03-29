@@ -41,9 +41,11 @@ def main():
   with Pool() as pool:
     results = pool.starmap(agent_worker, methods)
   print('done')
+  print('saving results')
   for result in results:
     plt.plot(result)
-  print('saving results')
+  plt.xlabel('step')
+  plt.ylabel('average reward')
   plt.legend(['eps 0.1', 'eps 0.01', 'greedy',
               'eps 0.1 opt 5', 'eps 0.01 opt 5', 'greedy opt 5'])
   plt.savefig(PLOT_FILENAME, dpi=400)
