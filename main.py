@@ -10,10 +10,10 @@ TRAIN_STEPS = 1000
 PLOT_FILENAME = 'plot.png'
 
 
-def agent_worker(method):
+def agent_worker(method, envs):
   result = np.zeros(TRAIN_STEPS)
   for run in range(RUNS):
-    env = np.random.normal(0, 1, K)
+    env = envs[run]
     run_result = np.zeros(TRAIN_STEPS)
     Qs_hat = np.zeros(K)
     ns = np.zeros(K) + 1e-7
@@ -31,10 +31,11 @@ def main():
   methods = [partial(eps_greedy_action, eps=0.1),
              partial(eps_greedy_action, eps=0.01),
              greedy_action]
+  envs = np.random.normal(0, 1, (RUNS, K))
 
   print('starting processes')
   with Pool(processes=len(methods)) as pool:
-    results = pool.map(agent_worker, methods)
+    results = pool.map(partial(agent_worker, envs=envs), methods)
   print('done')
 
   for result in results:
