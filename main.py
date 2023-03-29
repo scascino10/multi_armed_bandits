@@ -10,12 +10,12 @@ TRAIN_STEPS = 1000
 PLOT_FILENAME = 'plot.png'
 
 
-def agent_worker(method, envs):
+def agent_worker(method, envs, optimism=0):
   result = np.zeros(TRAIN_STEPS)
   for run in range(RUNS):
     env = envs[run]
     run_result = np.zeros(TRAIN_STEPS)
-    Qs_hat = np.zeros(K)
+    Qs_hat = np.zeros(K) + optimism
     ns = np.zeros(K) + 1e-7
     for step in range(TRAIN_STEPS):
       a = method(Qs_hat)
@@ -28,20 +28,24 @@ def agent_worker(method, envs):
 
 
 def main():
-  methods = [partial(eps_greedy_action, eps=0.1),
-             partial(eps_greedy_action, eps=0.01),
-             greedy_action]
   envs = np.random.normal(0, 1, (RUNS, K))
 
-  print('starting processes')
-  with Pool(processes=len(methods)) as pool:
-    results = pool.map(partial(agent_worker, envs=envs), methods)
-  print('done')
+  methods = [(partial(eps_greedy_action, eps=0.1), envs, 0),
+             (partial(eps_greedy_action, eps=0.01), envs, 0),
+             (greedy_action, envs, 0),
+             (partial(eps_greedy_action, eps=0.1), envs, 5),
+             (partial(eps_greedy_action, eps=0.01), envs, 5),
+             (greedy_action, envs, 5)]
 
+  print('starting processes')
+  with Pool() as pool:
+    results = pool.starmap(agent_worker, methods)
+  print('done')
   for result in results:
     plt.plot(result)
   print('saving results')
-  plt.legend(['eps 0.1', 'eps 0.01', 'greedy'])
+  plt.legend(['eps 0.1', 'eps 0.01', 'greedy',
+              'eps 0.1 opt 5', 'eps 0.01 opt 5', 'greedy opt 5'])
   plt.savefig(PLOT_FILENAME, dpi=400)
   print(f'results saved in {PLOT_FILENAME}')
 
